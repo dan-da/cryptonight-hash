@@ -18,14 +18,18 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 digest = "0.8.1"
 sha3 = "0.8.2"
-slice-cast = "0.1.2"
 tiny-keccak = "1.5.0"
 
 # Hashes needed for implementing the final step
 blake-hash = "0.3.1"
 groestl = "0.8.0"
 jh-x86_64 = "0.2.2"
-skein-hash = "0.3.0"
+skein-hash = "0.3.0, < 0.3.1"
+
+# block-cipher-trait has been yanked from crates.io.
+# So we (temporarily) use tag from github instead.
+[patch.crates-io]
+block-cipher-trait = { git = 'https://github.com/RustCrypto/traits', tag = "block-cipher-trait-v0.6.2" }
 
 [dev-dependencies]
 criterion = "0.3.0"
@@ -33,7 +37,9 @@ hex = "0.4.0"
 hex-literal = "0.2.1"
 
 [features]
-default = ["aesni"]
+default = []
+# note: disable default aesni until it runs without crashing.
+# default = ["aesni"]
 
 # Enable AES CPU extensions if available.
 aesni = []

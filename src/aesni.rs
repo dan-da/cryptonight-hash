@@ -14,8 +14,6 @@ use std::arch::x86::*;
 use std::arch::x86_64::*;
 use std::mem::size_of;
 
-use slice_cast::cast_mut;
-
 use crate::ROUNDS;
 
 /// Type for a set of explode/implode AES keys.
@@ -25,8 +23,8 @@ type KeysType = [__m128i; 10];
 #[target_feature(enable = "sse2")]
 pub unsafe fn digest_main(keccac: &mut [u8], scratchpad: &mut [u8]) {
     // Cast to SSE types
-    let scratchpad: &mut [__m128i] = cast_mut(scratchpad);
-    let keccac: &mut [__m128i] = cast_mut(&mut keccac[..192]);
+    let scratchpad: &mut [__m128i] = unsafe { std::mem::transmute(scratchpad) };
+    let keccac: &mut [__m128i] = unsafe { std::mem::transmute(&mut keccac[..192]) };
 
     init_scratchpad(keccac, scratchpad);
     main_loop(keccac, scratchpad);
@@ -160,7 +158,7 @@ unsafe fn cn_8byte_mul(a: __m128i, b: __m128i) -> __m128i {
 #[target_feature(enable = "sse2")]
 unsafe fn finalize_state(keccac: &mut [__m128i], scratchpad: &[__m128i]) {
     let keys = derive_key(keccac[2], keccac[3]);
-    let final_block: &mut [__m128i] = cast_mut(&mut keccac[4..]);
+    let final_block: &mut [__m128i] = unsafe { std::mem::transmute(&mut keccac[4..]) };
 
     for scratchpad_chunk in scratchpad.chunks_exact(final_block.len()) {
         for (block, sp_slice) in final_block.iter_mut().zip(scratchpad_chunk.iter()) {
